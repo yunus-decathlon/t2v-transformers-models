@@ -33,12 +33,13 @@ class Vectorizer:
     model: AutoModel
     tokenizer: AutoTokenizer
     cuda: bool
+    mps: bool
     cuda_core: str
     model_type: str
     direct_tokenize: bool
     executor: ThreadPoolExecutor
 
-    def __init__(self, model_path: str, cuda_support: bool, cuda_core: str, cuda_per_process_memory_fraction: float, model_type: str, architecture: str, direct_tokenize: bool):
+    def __init__(self, model_path: str, cuda_support: bool, cuda_core: str, cuda_per_process_memory_fraction: float, model_type: str, architecture: str, direct_tokenize: bool, ismps: bool):
         self.cuda = cuda_support
         self.cuda_core = cuda_core
         self.cuda_per_process_memory_fraction = cuda_per_process_memory_fraction
@@ -46,8 +47,10 @@ class Vectorizer:
         self.direct_tokenize = direct_tokenize
 
         self.model_delegate: HFModel = ModelFactory.model(model_type, architecture, cuda_support, cuda_core)
+        self.mps = ismps
         self.model = self.model_delegate.create_model(model_path)
-
+        if self.mps:
+            self.model.to("mps")
         if self.cuda:
             self.model.to(self.cuda_core)
             if self.cuda_per_process_memory_fraction:
@@ -94,6 +97,8 @@ class Vectorizer:
                     end_index = start_index + MAX_BATCH_SIZE
 
                     tokens = self.tokenize(sentences[start_index:end_index])
+                    if self.mps:
+                        tokens.to("mps")
                     if self.cuda:
                         tokens.to(self.cuda_core)
                     batch_results = self.get_batch_results(tokens, sentences[start_index:end_index])
