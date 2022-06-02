@@ -1,19 +1,19 @@
 import os
 from logging import getLogger
 from fastapi import FastAPI, Response, status
-from vectorizer import Vectorizer, VectorInput
-from meta import Meta
+from transformer import Transformer, TextInput, TextsInput
 
 
 app = FastAPI()
-vec : Vectorizer
-meta_config : Meta
 logger = getLogger('uvicorn')
 
 @app.on_event("startup")
 def startup_event():
-    global vec
-    global meta_config
+    global encoder
+    model_path = "/./models/trans" #we assume the model was already downloaded
+    device = os.environ.get("DEVICE") # device can be any pytorch device. 
+    # Current implementation should detect cuda devices automatically
+    encoder = Transformer().load_model(model_path, device)
 
     cuda_env = os.getenv("ENABLE_CUDA")
     cuda_per_process_memory_fraction = 1.0
@@ -61,12 +61,19 @@ async def live_and_ready(response: Response):
 def meta():
     return meta_config.get()
 
+@app.post("/texts/") #future support for /medias/
+# Example Input JSON
+# '{"text": ["cats are better than dogs", "and better than humans"]}'
+def read_items(item: TextsInput, response: Response):
+    return read_item(item, response)
 
 @app.post("/vectors")
 @app.post("/vectors/")
-async def read_item(item: VectorInput, response: Response):
+# Example Input JSON
+# '{"text": "cats are better than dogs"}'
+def read_item(item: TextInput, response: Response):
     try:
-        vector = await vec.vectorize(item.text, item.config)
+        vector = encoder(item.text)
         return {"text": item.text, "vector": vector.tolist(), "dim": len(vector)}
     except Exception as e:
         logger.exception('Something went wrong while vectorizing data.')
