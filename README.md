@@ -1,6 +1,6 @@
 To run locally with MPS support:
 
-Install dependencies:
+Install dependencies and serve module:
 ```
 conda env create --name weaviate
 conda activate weaviate
