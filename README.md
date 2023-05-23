@@ -1,3 +1,44 @@
+To run locally with MPS support:
+
+Install dependencies:
+```
+conda env create --name weaviate
+conda activate weaviate
+pip install -r requirements.txt
+uvicorn app:app --host 0.0.0.0 --port 8082
+```
+
+Docker-compose.yml to run weviate with this module:
+```
+version: '3.9'
+services:
+  weaviate:
+    command:
+    - --host
+    - 0.0.0.0
+    - --port
+    - '8080'
+    - --scheme
+    - http
+    image: semitechnologies/weaviate:1.19.5
+    ports: 
+      - 8080:8080
+    restart: on-failure:0
+    volumes:
+      - ./storage/:/var/lib/weaviate
+      - ./backup/:/var/lib/backup
+    environment:
+      TRANSFORMERS_INFERENCE_API: 'http://host.docker.internal:8082'
+      QUERY_DEFAULTS_LIMIT: 25
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: 'true'
+      PERSISTENCE_DATA_PATH: '/var/lib/weaviate'
+      DEFAULT_VECTORIZER_MODULE: 'text2vec-transformers'
+      ENABLE_MODULES: 'backup-filesystem,text2vec-transformers'
+      CLUSTER_HOSTNAME: 'node1'
+      BACKUP_FILESYSTEM_PATH: "/var/lib/backup/"
+    ...
+ ```
+
 # transformers inference (for Weaviate)
 
 This is the the inference container which is used by the Weaviate
