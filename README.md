@@ -1,4 +1,4 @@
-From [here](https://github.com/weaviate/t2v-transformers-models), with added support for Apple Silicon (MPS). Inference is at least one order of magnitude faster with MPS.
+From [here](https://github.com/weaviate/t2v-transformers-models), with added support for Apple Silicon (MPS). I rebased and fixed the existing MPS branch to work with the latest version of the module. Inference is at least one order of magnitude faster with MPS.
 
 To run locally:
 
