@@ -1,14 +1,17 @@
-To run locally with MPS support:
+From [here](https://github.com/weaviate/t2v-transformers-models), with added support for Apple Silicon (MPS). Inference is at least one order of magnitude faster with MPS.
 
-Install dependencies and serve module:
+To run locally:
+
+### Install dependencies and serve module:
 ```
 conda env create --name weaviate
 conda activate weaviate
 pip install -r requirements.txt
 uvicorn app:app --host 0.0.0.0 --port 8082
 ```
+The module itself can't be dockerized, because MPS is not available inside the VM that is used by Docker for Mac. If you run the main Weaviate instance inside Docker, you have to pass the module address to the Weviate instance like this: `http://host.docker.internal:8082`.
 
-Docker-compose.yml to run weviate with this module:
+### Example docker-compose.yml to run weviate with this module:
 ```
 version: '3.9'
 services:
